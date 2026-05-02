@@ -21,6 +21,16 @@ The user may provide:
 
 If nothing is provided, look at the current conversation context and `_PLAN.md` for the subject matter. If still unclear, ask: "What are we brain-trusting today?"
 
+## Step 0 — Anchor the user's position
+
+Before reading anything, ask:
+
+> "Before we convene the panel — what's your current position? What do you believe or plan to do right now? One sentence."
+
+Wait for the response. If the user has a position, reference it explicitly in at least one expert critique ("you said you're leaning toward X — here's why that's worth questioning"). If they say they don't have one yet, proceed without it.
+
+This is the anchor the panel pushes against. Without it, the experts have no target.
+
 ## Step 1 — Read the subject matter
 
 1. If a file path was given, read it.
@@ -37,7 +47,8 @@ Based on the domain, select **3 expert personas** that would bring genuinely dif
 - At least one should be a **contrarian or skeptic** — someone who'll push back
 - At least one should be a **practitioner** — someone who's shipped this exact kind of thing
 - At least one should represent the **end user or stakeholder** who'll be affected by the output
-- Give each a name, a one-line bio, and a stated bias (what they're known for caring about)
+- Give each a name, a **specific bio grounded in real experience** — not just a role title. Include the kind of work they've shipped, the failures they've lived through, or the context that shaped their bias. "A senior engineer who debugged production Kafka lag" activates more differentiated thinking than "a senior engineer."
+- State their bias explicitly (what they're known for caring about)
 
 **Present the panel to the user before proceeding:**
 
@@ -80,44 +91,46 @@ For each expert, generate their independent review. Each expert should speak in 
 
 **Important:**
 - Experts should **disagree with each other** where their perspectives naturally conflict. Don't make them all agree.
+- **Each expert after the first must explicitly contradict at least one claim made by a prior expert.** If all three experts reach compatible conclusions via different paths, the panel isn't diverse enough — recalibrate.
 - Critiques should be **specific to the actual content**, not generic advice. Reference specific items from the plan/doc.
 - Each expert's voice should feel different — the skeptic should sound skeptical, the practitioner should sound pragmatic, etc.
+- **Gut check scores should diverge.** If all three give 7/10, that's false precision. Push experts toward genuinely different confidence levels and require them to explain the gap.
 
 ## Step 4 — Synthesis
 
-After all three critiques, synthesize:
+After all three critiques, synthesize. The synthesis surfaces the decision — it does not make it. Your job is to map the terrain clearly enough that the user can decide confidently.
 
 ```
 ## Brain Trust Synthesis
 
 ### Where all three agree
-- [consensus items — these are high-confidence moves]
+- [consensus items — act on these with confidence]
 
 ### Where they disagree
 - [conflict] — [Expert A] says X, [Expert B] says Y
-  _Recommendation:_ [your call on which perspective wins and why]
-
-### Revised priorities (synthesized)
-1. [highest priority action] — [why, drawing on expert input]
-2. [next]
-3. [next]
-4. [next]
-5. [next]
+  _The trade-off:_ [what's actually at stake in this disagreement — not who's right]
 
 ### Blind spots surfaced
-- [things the experts raised that weren't in the original plan]
+- [things the experts raised that weren't in the original plan or subject matter]
 
 ### What to drop
 - [things experts agreed aren't worth the effort right now]
+
+### Your decision
+The panel has done its job. Here's the landscape:
+- **Clear:** [2–3 consensus items the user can act on now]
+- **Contested:** [1–2 items where reasonable people disagree — these need your call]
+
+What do you want to do?
 ```
 
-## Step 5 — Offer next steps
+## Step 5 — Follow through
 
-After the synthesis, ask:
+After the user responds:
 
-> "Want me to update _PLAN.md with these priorities, or just keep this as a reference?"
-
-If the user wants more depth on a specific expert's perspective, re-engage that persona for a deeper dive.
+- If they want to act on specific items, help them execute or update `_PLAN.md`.
+- If they want to go deeper on one expert's perspective, re-engage that persona for a focused dive.
+- If they're still undecided on a contested item, offer to explore the specific trade-off rather than re-running the full panel.
 
 ## Key rules
 
@@ -125,4 +138,12 @@ If the user wants more depth on a specific expert's perspective, re-engage that 
 - **Disagreement is the point.** If all three experts agree on everything, the panel isn't diverse enough. Recalibrate.
 - **Stay concrete.** "You should think about scalability" is useless. "Your event-driven approach will bottleneck at the message broker when you hit 10K concurrent users — consider partitioning by tenant ID" is useful.
 - **No sycophancy.** The experts are here to make the plan better, not to validate it. At least one expert should find something meaningfully wrong.
-- **The synthesis is opinionated.** Don't just list the disagreements — make a recommendation on who's right and why.
+- **The synthesis presents — it doesn't decide.** Surface what's clear and what's contested. The user makes the call.
+- **These are synthetic experts.** They pattern-match from training data, not lived experience. They have no accountability for being wrong. Hold the output accordingly — useful for framing, not authoritative on facts.
+
+## When not to use brain-trust
+
+- **Factual or technical correctness is the primary need** — synthetic experts generate confident opinions from training data. If you need ground truth (specific API behavior, legal accuracy, medical guidance), use a real expert.
+- **High-stakes irreversible decisions** — the false confidence from a synthetic panel is most costly when you can't undo the outcome. A panel that sounds authoritative isn't.
+- **You need real stakeholder buy-in** — a synthetic panel can't substitute for getting actual humans aligned. It can help you *prepare* for that conversation, not replace it.
+- **You already know what you want to do** — if you have a strong pre-existing preference, you'll route toward whichever expert agrees with you. Notice if you're shopping for validation rather than pressure-testing.
