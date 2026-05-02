@@ -1,20 +1,20 @@
 ---
 name: project-init
-description: Use when the user wants to create a PROJECT.md file for the current repository. Triggers on "project init", "init project", "create PROJECT.md", "set up project file", "write project context".
+description: Use when the user wants to create a _PROJECT.md file for the current repository. Triggers on "project init", "init project", "create PROJECT.md", "set up project file", "write project context".
 disable-model-invocation: true
 ---
 
 # `/project-init` Skill
 
-Interactively create a PROJECT.md file for the current repo. Gathers context from existing repo files and Linear before asking questions, so you confirm or correct rather than type from scratch.
+Interactively create a `_PROJECT.md` file for the current repo. Gathers context from existing repo files and Linear before asking questions, so you confirm or correct rather than type from scratch.
 
 ---
 
 ## Before starting
 
-Check for an existing PROJECT.md in the repo root. If one exists, stop immediately and tell the user:
+Check for an existing `_PROJECT.md` in the repo root. If one exists, stop immediately and tell the user:
 
-> "PROJECT.md already exists in this repo. This skill only creates new files — edit it directly or delete it to start fresh."
+> "_PROJECT.md already exists in this repo. This skill only creates new files — edit it directly or delete it to start fresh."
 
 Do not proceed.
 
@@ -25,8 +25,8 @@ Do not proceed.
 Before asking anything, read all of the following that exist. Do not show this work to the user — just build your internal picture of the project.
 
 - `CLAUDE.md` in repo root — project purpose, architecture, key files
-- `PLAN.md` — tasks, phases, current focus
-- `LINEAR_TODO.md` — backlog items
+- `_PLAN.md` — tasks, phases, current focus
+- `_LINEAR_TODO.md` — backlog items
 - `POST_SIGN_EXTRACTION_BRIEF.md` or any `*BRIEF*` / `*SPEC*` / `*README*` files in root
 - Recent git log: `git log --oneline -20`
 - List Linear projects: call `list_projects` — find the best match for this repo by name similarity
@@ -162,10 +162,10 @@ Wait for response.
 
 ## Step 9 — Preview and confirm
 
-Compose the full PROJECT.md content using all confirmed answers. Show it in a fenced markdown block.
+Compose the full `_PROJECT.md` content using all confirmed answers. Show it in a fenced markdown block.
 
 Then ask:
-> Here's the full PROJECT.md. Want me to write it to the repo root, or make any changes first?
+> Here's the full _PROJECT.md. Want me to write it to the repo root, or make any changes first?
 
 Wait for explicit confirmation before writing.
 
@@ -173,10 +173,54 @@ Wait for explicit confirmation before writing.
 
 ## Step 10 — Write the file
 
-Write PROJECT.md to the repo root using the confirmed content.
+Write `_PROJECT.md` to the repo root using the confirmed content.
+
+---
+
+## Step 11 — Scaffold context structure
+
+After writing `_PROJECT.md`, create the following folder structure using `.gitkeep` files:
+
+```
+_context/
+├── reference/     # PDFs, research, data files, brand assets brought in from outside
+├── transcripts/   # Meeting/call recordings and their text versions
+└── samples/       # Example documents, templates, sample data
+_prompts/           # AI/LLM instructions and workflows
+```
+
+Create each folder by writing a `.gitkeep` file into it:
+- `_context/reference/.gitkeep`
+- `_context/transcripts/.gitkeep`
+- `_context/samples/.gitkeep`
+- `_prompts/.gitkeep`
+
+If any of these folders already exist, skip them silently.
+
+---
+
+## Step 12 — Scaffold docs structure
+
+Also create the following docs folder structure using `.gitkeep` files:
+
+```
+_docs/
+├── architecture/   # What's built — system diagrams, component overviews, data models
+├── specs/          # Feature specs, design briefs, scope documents
+├── setup/          # How to install, configure, run — builder-facing
+└── guides/         # End-user how-tos and walkthroughs
+```
+
+Create each folder by writing a `.gitkeep` file into it:
+- `_docs/architecture/.gitkeep`
+- `_docs/specs/.gitkeep`
+- `_docs/setup/.gitkeep`
+- `_docs/guides/.gitkeep`
+
+If any of these folders already exist, skip them silently.
 
 Confirm:
-> ✅ PROJECT.md written. Run `/review-issues` to check how the issues align with it.
+> ✅ _PROJECT.md written and project structure scaffolded. Run `/review-issues` to check how the issues align with it.
 
 ---
 

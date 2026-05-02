@@ -10,7 +10,7 @@ Work autonomously on the Linear issue: **$ARGUMENTS**
 
 **1. Load context**
 - Fetch the issue from Linear MCP using the identifier provided (e.g. PRS-39)
-- Read `PLAN.md` in the project root to understand the current plan and where this issue fits
+- Read `_PLAN.md` in the project root to understand the current plan and where this issue fits
 - Read `CLAUDE.md` in the project root (and `~/.claude/CLAUDE.md` for global preferences) to understand conventions, architecture, and constraints
 - Read any files or artifacts referenced in the issue description
 
@@ -26,11 +26,11 @@ Work autonomously on the Linear issue: **$ARGUMENTS**
 - Work through all subtasks described in the issue
 - Follow the conventions in CLAUDE.md — file structure, commit style, tooling preferences
 - Commit incrementally with clear messages as you complete logical chunks
-- If you discover a meaningful subtask not already in the issue, add it to PLAN.md
+- If you discover a meaningful subtask not already in the issue, add it to _PLAN.md
 
 **5. Definition of done**
 - All steps in the issue description are complete
-- PLAN.md checkbox for this issue is checked off
+- _PLAN.md checkbox for this issue is checked off
 - Any output artifacts are committed
 - Linear issue status is set to "Done"
 - Give a concise summary of what was completed and any follow-on items to be aware of

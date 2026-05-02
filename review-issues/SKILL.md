@@ -14,29 +14,32 @@ Review open Linear issues for a project or milestone. Surfaces prioritization re
 
 Parse the user's invocation:
 
-- **No args** → look for `PROJECT.md` in the current repo root; read `linear_project` field to resolve the project. If no `PROJECT.md` in repo root, check `~/.claude/projects/`. If still missing, ask the user to specify a project name.
-- **`[project name]`** → use that project's open issues directly (skip PROJECT.md lookup).
+- **No args** → look for `_PROJECT.md` in the current repo root; read `linear_project` field to resolve the project. If no `_PROJECT.md` in repo root, check `~/.claude/projects/`. If still missing, ask the user to specify a project name.
+- **`[project name]`** → use that project's open issues directly (skip _PROJECT.md lookup).
 - **`[project name] milestone:[name]`** → filter to issues matching that milestone; use case-insensitive partial match on milestone name.
 
 ---
 
 ## Step 1 — Load project context
 
-1. Find PROJECT.md: repo root first, then `~/.claude/projects/[slug]/PROJECT.md`.
+1. Find _PROJECT.md: repo root first, then `~/.claude/projects/[slug]/_PROJECT.md`.
 2. If found, extract:
-   - `linear_project` (from `## Meta` section)
+   - `linear_project_id` (from `## Meta` section — preferred, skip resolution in Step 2)
+   - `linear_project` (from `## Meta` section — used as fallback if ID is missing)
    - `staleness_days` (from `## Meta`; default 7 if absent)
    - Goal, current milestone, stakeholders, feature shape checklist, current focus, open questions, not-doing list
 3. Note the file's last modification date. If it's older than `staleness_days`, flag it in the output.
-4. If no PROJECT.md found: proceed with a **reduced review** (no phase gap detection). Note this limitation explicitly in the output header.
+4. If no _PROJECT.md found: proceed with a **reduced review** (no phase gap detection). Note this limitation explicitly in the output header.
 
 ---
 
 ## Step 2 — Resolve project and confirm ID
 
-1. Call `list_projects` to find the project by name (case-insensitive partial match).
-2. Display the resolved project name and ID before fetching any issues — this is the write guardrail.
-3. If multiple projects match, list them and ask the user to confirm which one.
+1. If `linear_project_id` was found in _PROJECT.md, use it directly — skip the `list_projects` call.
+2. If only `linear_project` (name) was found, call `list_projects` to resolve the ID (case-insensitive partial match). Once resolved, **write the ID back** to _PROJECT.md as `linear_project_id` so future runs skip this step.
+3. If a project name was passed as an argument (no _PROJECT.md), call `list_projects` to resolve normally.
+4. Display the resolved project name and ID before fetching any issues — this is the write guardrail.
+5. If multiple projects match, list them and ask the user to confirm which one.
 
 ---
 
@@ -44,7 +47,7 @@ Parse the user's invocation:
 
 1. Call `list_issues` filtered to: open state, resolved project, limit 250.
 2. If a milestone filter was specified, apply it now (filter the returned list by milestone name, case-insensitive partial match).
-3. For any issue that appears to be a phase-level issue (title contains "phase", "stage", or matches phase names from PROJECT.md), call `get_issue` with `includeRelations: true` to retrieve blocker/blocking relationships.
+3. For any issue that appears to be a phase-level issue (title contains "phase", "stage", or matches phase names from _PROJECT.md), call `get_issue` with `includeRelations: true` to retrieve blocker/blocking relationships.
 4. For other issues with sparse descriptions, call `get_issue` selectively to get full details before analysis.
 
 ---
@@ -56,10 +59,10 @@ Produce this report structure:
 ```
 ## Issue Review: [Project Name] — [today's date]
 [N] open issues · staleness threshold: [N] days
-⚠️ PROJECT.md last modified [X days ago] — may be stale   ← only if applicable
-⚠️ No PROJECT.md found — gap detection skipped            ← only if no PROJECT.md
+⚠️ _PROJECT.md last modified [X days ago] — may be stale   ← only if applicable
+⚠️ No _PROJECT.md found — gap detection skipped            ← only if no _PROJECT.md
 
-### Open questions (from PROJECT.md)
+### Open questions (from _PROJECT.md)
 List each open question from the ## Open questions section.
 Flag any that appear directly related to a blocked or stale issue.
 
@@ -69,9 +72,9 @@ Are they correctly sequenced? Is there anything missing that the
 milestone goal clearly requires?
 
 ### Phase gap detection
-(Skip this section entirely if no PROJECT.md was found.)
+(Skip this section entirely if no _PROJECT.md was found.)
 
-Against the ## Feature shape checklist from PROJECT.md, evaluate each phase:
+Against the ## Feature shape checklist from _PROJECT.md, evaluate each phase:
 ✅ Phase 1 — issue exists, inputs/outputs defined, blocker to Phase 2 set, criteria present
 ⚠️ Phase 2 — issue exists but blocker relationship to Phase 1 not set in Linear
 ❌ Phase 3 — no Linear issue found
@@ -121,4 +124,4 @@ Wait for user response. Then:
 - **Never apply changes without explicit per-action confirmation.**
 - **Frame uncertainty honestly** — "appears to be missing" not "is missing."
 - **Guard all writes** — resolve and display project ID at the start; re-verify before any `save_issue` call.
-- **Reduced mode** — if no PROJECT.md, skip gap detection and note the limitation at the top of the report. The rest of the review (staleness, priority, missing descriptions) still runs.
+- **Reduced mode** — if no _PROJECT.md, skip gap detection and note the limitation at the top of the report. The rest of the review (staleness, priority, missing descriptions) still runs.
