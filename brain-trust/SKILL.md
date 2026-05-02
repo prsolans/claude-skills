@@ -27,7 +27,7 @@ Before reading anything, ask:
 
 > "Before we convene the panel — what's your current position? What do you believe or plan to do right now? One sentence."
 
-Wait for the response. If the user has a position, reference it explicitly in at least one expert critique ("you said you're leaning toward X — here's why that's worth questioning"). If they say they don't have one yet, proceed without it.
+Wait for the response. If the user has a position, the skeptic/contrarian will directly challenge it by name in Step 3. If they say they don't have one yet, proceed without it.
 
 This is the anchor the panel pushes against. Without it, the experts have no target.
 
@@ -69,6 +69,10 @@ Convening the panel...
 
 ## Step 3 — Individual critiques
 
+Before generating the first critique, note internally:
+- What is the user's current position from Step 0? (if provided)
+- Assign one expert — the skeptic or contrarian — the explicit job of directly challenging that position. Their critique must name the position and argue against it.
+
 For each expert, generate their independent review. Each expert should speak in a distinct voice and stay in character. Structure each review as:
 
 ```
@@ -89,12 +93,13 @@ For each expert, generate their independent review. Each expert should speak in 
 **Gut check (1-10):** [N]/10 — [one sentence on overall confidence in this plan]
 ```
 
-**Important:**
-- Experts should **disagree with each other** where their perspectives naturally conflict. Don't make them all agree.
-- **Each expert after the first must explicitly contradict at least one claim made by a prior expert.** If all three experts reach compatible conclusions via different paths, the panel isn't diverse enough — recalibrate.
-- Critiques should be **specific to the actual content**, not generic advice. Reference specific items from the plan/doc.
-- Each expert's voice should feel different — the skeptic should sound skeptical, the practitioner should sound pragmatic, etc.
-- **Gut check scores should diverge.** If all three give 7/10, that's false precision. Push experts toward genuinely different confidence levels and require them to explain the gap.
+**Structural requirements — check these before moving to synthesis:**
+- **Expert 1:** establishes their position freely.
+- **Expert 2:** must name and contradict at least one specific claim Expert 1 made. Not a different emphasis — an actual disagreement.
+- **Expert 3:** must name and contradict at least one specific claim from either prior expert. If Expert 3 agrees with both, recalibrate before proceeding.
+- **The skeptic/contrarian:** must directly engage the user's stated position from Step 0 (if one was given) — name it and challenge it. "You said you're leaning toward X — here's why that's wrong."
+- **Gut check scores must diverge.** If two or more experts give the same score, adjust until they differ. Require each to explain why their score is higher or lower than the others.
+- Critiques must be **specific to the actual content** — reference specific items from the plan/doc, not generic advice.
 
 ## Step 4 — Synthesis
 
