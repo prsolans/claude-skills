@@ -1,10 +1,10 @@
 ---
-name: meeting-to-linear
-description: Use when the user wants to process a meeting transcript into Linear issues. Reads a transcript file and optional support documents, analyzes them for action items, decisions, and open questions, proposes Linear issues and milestone organization, then waits for human review before creating anything. Triggers on "/meeting-to-linear [transcript path] [optional: doc paths or folder paths...]".
+name: create-issues
+description: Use when the user wants to process a meeting transcript into Linear issues. Reads a transcript file and optional support documents, analyzes them for action items, decisions, and open questions, proposes Linear issues and milestone organization, then waits for human review before creating anything. Triggers on "/create-issues [transcript path] [optional: doc paths or folder paths...]".
 disable-model-invocation: true
 ---
 
-# meeting-to-linear Skill
+# create-issues Skill
 
 Processes a meeting transcript into a structured Linear backlog. Analyzes the transcript, proposes issues and milestones, waits for explicit human review, then executes only what's confirmed.
 
@@ -12,14 +12,16 @@ Processes a meeting transcript into a structured Linear backlog. Analyzes the tr
 
 ## Argument Handling
 
-`$ARGUMENTS` is space-separated. The first token is always the transcript. Any additional tokens are support documents or folders:
+`$ARGUMENTS` is space-separated. The first token is always the transcript or audio file. Any additional tokens are support documents or folders:
 
 ```
-/meeting-to-linear path/to/transcript.txt
-/meeting-to-linear path/to/transcript.txt doc1.pdf doc2.md
-/meeting-to-linear path/to/transcript.txt _context/reference/
+/create-issues path/to/transcript.txt
+/create-issues path/to/recording.m4a
+/create-issues path/to/transcript.txt doc1.pdf doc2.md
+/create-issues path/to/transcript.txt _context/reference/
 ```
 
+- The first argument can be an **audio or video file** (mp3, m4a, wav, flac, ogg, webm, mp4, avi, mkv, mov) — transcription runs automatically before analysis (see Step 0).
 - Transcript can be any plain text format: Gong export, Zoom transcript, manual notes, etc.
 - Support documents can be any readable file type: PDF, markdown, plain text, etc.
 - If a support document argument is a folder path, read all files in that folder (one level deep, non-recursive).
@@ -46,6 +48,36 @@ Processes a meeting transcript into a structured Linear backlog. Analyzes the tr
 
 3. If `_context/transcripts/` doesn't exist or is empty, fall back to asking the user to provide a file path.
 4. If `_context/reference/` doesn't exist or is empty, skip the support docs prompt and proceed with transcript only.
+
+---
+
+## Step 0 — Transcribe (if audio input)
+
+If the first argument has an audio or video extension (mp3, m4a, wav, flac, ogg, webm, mp4, avi, mkv, mov):
+
+1. Check dependencies:
+   ```bash
+   which ffmpeg > /dev/null 2>&1 || echo "NEED_FFMPEG"
+   uv tool list 2>/dev/null | grep -q whisper || echo "NEED_WHISPER"
+   ```
+   If `NEED_FFMPEG`: run `brew install ffmpeg`
+   If `NEED_WHISPER`: run `uv tool install openai-whisper --with torch --with setuptools-rust`
+
+2. Run Whisper using the `base` model:
+   ```bash
+   whisper "<file_path>" --model base --output_format txt --output_dir /tmp/whisper_out
+   ```
+   Tell the user: "Transcribing with Whisper base model..." and note if this is the first run (model download required).
+
+3. Read the output from `/tmp/whisper_out/<filename_without_ext>.txt`.
+
+4. Save the transcript to `_context/transcripts/` using the same base filename with a `.txt` extension. Create the directory if it doesn't exist.
+
+5. Tell the user: "Transcript saved to `_context/transcripts/<filename>.txt`. Proceeding with analysis..."
+
+6. Use this transcript file as the input for Step 1. Continue the normal flow.
+
+If the first argument is not an audio file, skip this step entirely.
 
 ---
 
@@ -201,14 +233,16 @@ Issues created:
 
 ## Verification checklist
 
-1. `/meeting-to-linear` (no args) → lists _context/transcripts/, user picks; lists _context/reference/, user picks; proceeds
-2. `/meeting-to-linear` + _context/transcripts/ empty → asks user to provide a file path
-3. `/meeting-to-linear notes/standup.txt` → reads transcript only, shows inventory, proceeds
-4. `/meeting-to-linear transcript.md doc1.pdf doc2.md` → reads all three, shows inventory, proceeds
-5. `/meeting-to-linear transcript.md _context/reference/` → reads transcript + all files in folder, shows inventory
-6. Project not found in _PROJECT.md → lists projects, asks user to confirm
-7. User replies "2 4" → creates only issues 2 and 4, reports result
-8. User replies "all" → creates all issues + milestones + closes confirmed issues
-9. User replies "none" → confirms cancelled, nothing written to Linear
-10. File not found → clear error, no further action
-11. Support doc from folder can't be read → skip it, note it in inventory, continue
+1. `/create-issues` (no args) → lists _context/transcripts/, user picks; lists _context/reference/, user picks; proceeds
+2. `/create-issues` + _context/transcripts/ empty → asks user to provide a file path
+3. `/create-issues notes/standup.txt` → reads transcript only, shows inventory, proceeds
+4. `/create-issues transcript.md doc1.pdf doc2.md` → reads all three, shows inventory, proceeds
+5. `/create-issues transcript.md _context/reference/` → reads transcript + all files in folder, shows inventory
+6. `/create-issues recording.m4a` → transcribes with Whisper, saves to _context/transcripts/, proceeds with analysis
+7. `/create-issues recording.m4a doc1.pdf` → transcribes audio, reads support doc, proceeds
+8. Project not found in _PROJECT.md → lists projects, asks user to confirm
+9. User replies "2 4" → creates only issues 2 and 4, reports result
+10. User replies "all" → creates all issues + milestones + closes confirmed issues
+11. User replies "none" → confirms cancelled, nothing written to Linear
+12. File not found → clear error, no further action
+13. Support doc from folder can't be read → skip it, note it in inventory, continue
