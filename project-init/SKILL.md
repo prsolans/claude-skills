@@ -199,6 +199,28 @@ If any of these folders already exist, skip them silently.
 
 ---
 
+## Step 11b — Ensure `_context/` is gitignored
+
+`_context/` holds working inputs (reference, transcripts, samples) and generated artifacts — it must **never** be committed. Always make sure the repo-root `.gitignore` excludes it:
+
+- If `.gitignore` is missing, create it. If it exists but lacks `_context/`, append it.
+- Baseline entries:
+  ```
+  # Working context — never committed
+  _context/
+
+  # OS / editor cruft
+  .DS_Store
+  **/.DS_Store
+  ~$*
+  ```
+- If `_context/` was already committed, untrack it: `git rm -r --cached _context` (files stay on disk, out of the repo).
+- Verify with `git check-ignore _context` (should print `_context`).
+
+(The `_context/.gitkeep` files from Step 11 only scaffold the local folders; once `_context/` is ignored they aren't tracked — that's intended. `_prompts/` and `_docs/` remain tracked.)
+
+---
+
 ## Step 12 — Scaffold docs structure
 
 Also create the following docs folder structure using `.gitkeep` files:

@@ -106,6 +106,21 @@ user at the output folder. To eyeball a PDF, read its first page.
 
 - `uv run docgen template <type> --outdir <dir>` — emit a `.docx` doc-gen template with Document
   Assembler merge tags and signature anchors (for Docusign CLM generation flows), not a filled PDF.
+- `uv run docgen sxterm <clauses.yaml> --outdir <dir>` — emit **Docusign CLM `.sxterm` clause-library
+  files** (one per clause) for direct upload into a CLM clause library. A `.sxterm` file is a JSON
+  array of one-to-many named **variations** of a single clause/term; each variation is
+  `{Name, Content (HTML), Notes (HTML), Uid}`. Input YAML:
+  ```yaml
+  clauses:
+    - name: "Indemnification"            # -> Indemnification.sxterm
+      variations:
+        - name: "Standard"               # variation label shown in the library
+          content: |
+            **Indemnification.** Supplier shall ...   # plain text / **bold**; auto-wrapped to <p>/<strong>
+          notes: "Default position."      # optional guidance (also rendered to HTML)
+  ```
+  Content already starting with `<` is passed through as raw HTML. A `Uid` (GUID) is generated per
+  variation. One file per clause, named `<clause name>.sxterm`.
 - `uv run docgen catalog --output <file.json>` — machine-readable catalog of types/clauses.
 - `uv run docgen serve` — local web UI to browse the generated document library.
 
